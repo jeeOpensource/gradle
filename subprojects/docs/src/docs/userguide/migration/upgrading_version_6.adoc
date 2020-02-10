@@ -46,6 +46,26 @@ For example, when the library does not support the required Java version.
 The practical effect is that now all <<java_platform_plugin.adoc#sec:java_platform_consumption,platform dependencies>> have to be declared as such.
 Before, platform dependencies also worked, accidentally, when the `platform()` keyword was omitted for local platforms or platforms published with Gradle Module Metadata.
 
+==== Duplicate project names may cause publication to fail
+
+A fix done to disambiguate projects https://github.com/gradle/gradle/issues/847[having the same name] in dependency resolution made it possible to start publishing projects with identical coordinates.
+This could lead to invalid publications as multiple modules would overwrite each other.
+
+Given the above, a duplicate identifier check was added to prevent invalid publications.
+In some corner cases, the check can prove too eager and may need some action from the build author.
+
+----
+Project :server:common has the same (groupId, artifactId) as :client:common.
+You should set both the groupId and artifactId of the publication or opt out by adding the org.gradle.dependency.duplicate.project.detection system property to 'false'.
+----
+
+If your build fails with a message as above, you have two options:
+
+* Make sure you configure both the `groupId` and `artifactId` in the publication to resolve ambiguities
+* Disable this check if it is a false positive in your setup
+** By adding `-Dorg.gradle.dependency.duplicate.project.detection=false` to the CLI
+** Or by adding `systemProp.org.gradle.dependency.duplicate.project.detection=false` to `gradle.properties`
+
 === Deprecations
 
 There were no deprecations between Gradle 6.1 and 6.2.
