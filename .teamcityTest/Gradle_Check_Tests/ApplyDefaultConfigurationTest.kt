@@ -97,7 +97,10 @@ class ApplyDefaultConfigurationTest {
         applyTestDefaults(buildModel, buildType, "myTask", os = Os.windows, extraParameters = extraParameters, daemon = daemon)
 
         assertEquals(listOf(
+            "ATTACH_FILE_LEAK_DETECTOR",
             "GRADLE_RUNNER",
+            "SET_BUILD_SUCCESS_ENV",
+            "DUMP_OPEN_FILES_ON_FAILURE",
             "KILL_PROCESSES_STARTED_BY_GRADLE",
             "GRADLE_RERUNNER",
             "KILL_PROCESSES_STARTED_BY_GRADLE_RERUN",
@@ -123,5 +126,5 @@ class ApplyDefaultConfigurationTest {
 
     private
     fun expectedRunnerParam(daemon: String = "--daemon", extraParameters: String = "") =
-        "-Dorg.gradle.workers.max=%maxParallelForks% -PmaxParallelForks=%maxParallelForks% -s $daemon --continue -I \"%teamcity.build.checkoutDir%/gradle/init-scripts/build-scan.init.gradle.kts\" -Dorg.gradle.internal.tasks.createops -Dorg.gradle.internal.plugins.portal.url.override=%gradle.plugins.portal.url% $extraParameters -PteamCityToken=%teamcity.user.bot-gradle.token% -PteamCityBuildId=%teamcity.build.id% \"-Dscan.tag.Check\" \"-Dscan.tag.\""
+        "-Dorg.gradle.workers.max=%maxParallelForks% -PmaxParallelForks=%maxParallelForks% -Dorg.gradle.unsafe.vfs.drop=true -s $daemon --continue -I \"%teamcity.build.checkoutDir%/gradle/init-scripts/build-scan.init.gradle.kts\" -Dorg.gradle.internal.tasks.createops -Dorg.gradle.internal.plugins.portal.url.override=%gradle.plugins.portal.url% $extraParameters -PteamCityToken=%teamcity.user.bot-gradle.token% -PteamCityBuildId=%teamcity.build.id% \"-Dscan.tag.Check\" \"-Dscan.tag.\""
 }

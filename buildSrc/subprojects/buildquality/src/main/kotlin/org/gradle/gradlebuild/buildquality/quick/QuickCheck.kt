@@ -110,8 +110,14 @@ enum class Check(private val extension: String) {
         }
 
         override fun addDependencies(project: Project) {
+            val ruleClass = Class.forName("org.gradle.gradlebuild.buildquality.codenarc.IntegrationTestFixturesRule", false, this.javaClass.classLoader)
             project.dependencies.add("quickCheck", project.dependencies.localGroovy())
-            project.dependencies.add("quickCheck", "org.codenarc:CodeNarc:1.5")
+            project.dependencies.add("quickCheck", project.dependencies.embeddedKotlin("stdlib"))
+            project.dependencies.add("quickCheck", "org.slf4j:slf4j-api:1.7.28")
+            project.dependencies.add("quickCheck", project.files(ruleClass.protectionDomain!!.codeSource!!.location))
+            project.dependencies.add("quickCheck", "org.codenarc:CodeNarc:1.5") {
+                isTransitive = false
+            }
         }
 
         private
@@ -122,9 +128,15 @@ enum class Check(private val extension: String) {
     },
     KOTLIN(".kt") {
         override fun runCheck(project: Project, filesToBeChecked: List<String>) {
+            val nonTeamCityKtFiles = filesToBeChecked.filter { !it.startsWith(".teamcity") }
+            if (nonTeamCityKtFiles.isEmpty()) {
+                println("Only .teamcity kt file changes found, skip.")
+                return
+            }
+
             project.javaexec {
                 main = "com.github.shyiko.ktlint.Main"
-                filesToBeChecked.forEach { args(it) }
+                nonTeamCityKtFiles.forEach { args(it) }
                 args("--reporter=plain")
                 args("--color")
                 classpath = project.configurations["quickCheck"]
